@@ -5,6 +5,8 @@ numpy
 scipy
 statsmodels
 scikit-learn
+os
+streamlit_folium
 
 matplotlib
 seaborn

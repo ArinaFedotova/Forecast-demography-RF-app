@@ -17,6 +17,7 @@ pages = [
     st.Page("forecast_expsm.py", title="Прогноз методом экспоненциального сглаживания"),
 
     st.Page("cohort_moving.py", title="Прогноз методом передвижки возрастов")
+
 ]
 
 
