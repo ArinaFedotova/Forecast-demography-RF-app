@@ -6,6 +6,9 @@ scipy
 statsmodels
 scikit-learn
 streamlit_folium
+fiona
+geopandas
+folium
 
 matplotlib
 seaborn
