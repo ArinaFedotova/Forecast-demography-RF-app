@@ -616,7 +616,7 @@ elif selectbox_proc == "Коэффициент рождаемости":
             with line_tab:
                 st.line_chart(births_coeff_df[births_coeff_df.columns[:-1]], x_label = 'Годы', y_label = 'Рождений на 1000 женщин')
             with bar_tab:
-                st.bar_chart(births_coeff_df[births_coeff_df.columns[:-1]], x_label = 'Годы', y_label = 'Рождений на 1000 женщин', sort = False)
+                st.bar_chart(births_coeff_df[births_coeff_df.columns[:-1]], x_label = 'Годы', y_label = 'Рождений на 1000 женщин')
 
     with forecast_tab:
         st.subheader('Прогноз динамики показателя коэффициента рождаемости')
@@ -649,7 +649,7 @@ elif selectbox_proc == "Коэффициент смертности":
         with line_tab:
             st.line_chart(deaths_m_coeff_df[deaths_m_coeff_df.columns[:-1]], x_label = 'Годы', y_label = 'Смертей на 1000 чловек')
         with bar_tab:
-            st.bar_chart(deaths_m_coeff_df[deaths_m_coeff_df.columns[:-1]], x_label = 'Годы', y_label = 'Смертей на 1000 чловек', sort = False)
+            st.bar_chart(deaths_m_coeff_df[deaths_m_coeff_df.columns[:-1]], x_label = 'Годы', y_label = 'Смертей на 1000 чловек')
 
     with forecast_tab:
         st.subheader('Прогноз динамики показателя коэффициента смертности')
