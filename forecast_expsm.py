@@ -173,7 +173,6 @@ def define_error_result(rmse, mape):
 def IsTrend(series, p_level=0.95):
     m, l = 1, 1 
     D = 0
-    st.write(series)
     for cur_ind in range(1, len(series)): 
         m, l = 1, 1
         for prev_ind in range(cur_ind):

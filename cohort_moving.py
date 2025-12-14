@@ -103,8 +103,6 @@ def get_forcasts():
     return df_menmig, df_womenmig, df_birthscoeff
         
 migr_men_step5, migr_women_step5, births_coeff_step5 = get_forcasts()
-st.write(migr_men_step5)
-st.write(migr_women_step5)
 men_prop = 0.514569
 wom_prop = 0.485431
 
@@ -204,9 +202,6 @@ def move_cohorts(year):
 
 #____________________________Интерфейс_______________________________#
 
-
-
-st.dataframe(cohort_df_2023)
 
 year = st.slider('Передвижка', 2023, 2038, step = 5)
 
