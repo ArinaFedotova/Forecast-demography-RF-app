@@ -96,7 +96,9 @@ def display_sidebar(object_name = '', tab_key = '', size_df = 0, params_vis = No
     min_train_size = 6
     max_test_ratio = min(max(0.1, round(1 - min_train_size / size_df, 2)), 0.4)
     
-    
+    if max_test_ratio < min_test_ratio:
+        min_test_ratio, max_test_ratio = max_test_ratio, min_test_ratio
+        
     if select_params:
         with st.sidebar.expander(f'**Настройка параметров прогнозной модели {object_name}:**'): 
             if params_vis:
@@ -201,14 +203,23 @@ def smoothing(series, window=3):
 
 @st.cache_data(show_spinner = True)
 def auto_forecast_exp_smooth(data, column_name, info_print = True):
-    if len(data) < 6:
-        model = ExponentialSmoothing(train[column_name]).fit(optimized=True)
-        
-        return [(0.0, None, None, None, model, None, None)]
 
     min_train_size = 6
     min_tr, max_tr, step = 0.1 if len(data) >= 10 else round(1/len(data), 2), min(max(0.1, round(1 - min_train_size / len(data), 2)), 0.4), 0.05
+    if min_tr > max_tr:
+        min_tr, max_tr = max_tr, min_tr
+    
+    if len(data) < 6:
+        train, test = split_data(data, max_tr)
+        model = ExponentialSmoothing(train[column_name]).fit(optimized=True)
+        forecast = model.forecast(len(test))
 
+        rmse = np.sqrt(mean_squared_error(test[column_name], forecast))
+        mape = mean_absolute_percentage_error(test[column_name], forecast) * 100
+        if info_print:
+            st.info(f"""Данных недостаточно, поэтому был построен один прогноз при помощи простого экспоненциального сглаживания""")
+        
+        return [(0.0, None, None, None, model, rmse, mape)]
     
     test_ratio_range = np.arange(min_tr, max_tr+step, step).round(2).tolist()
 
@@ -717,7 +728,7 @@ elif selectbox_proc == "Коэффициент рождаемости":
             with line_tab:
                 st.line_chart(births_coeff_df[births_coeff_df.columns[:-1]], x_label = 'Годы', y_label = 'Рождений на 1000 женщин')
             with bar_tab:
-                st.bar_chart(births_coeff_df[births_coeff_df.columns[:-1]], x_label = 'Годы', y_label = 'Рождений на 1000 женщин', sort = False)
+                st.bar_chart(births_coeff_df[births_coeff_df.columns[:-1]], x_label = 'Годы', y_label = 'Рождений на 1000 женщин')
 
     with forecast_tab:
         st.subheader('Прогноз динамики показателя коэффициента рождаемости')

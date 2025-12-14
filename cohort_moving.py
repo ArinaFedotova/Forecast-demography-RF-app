@@ -106,10 +106,11 @@ migr_men_step5, migr_women_step5, births_coeff_step5 = get_forcasts()
 men_prop = 0.514569
 wom_prop = 0.485431
 
+
 df_all_forc = {2023 : pd.DataFrame({
             'Численность, мужчин': cohort_df_2023['Численность, мужчин'],
-            'Численность, женщин': cohort_df_2023['Численность, женщин']})}
-df_new = cohort_df_2023.copy()
+            'Численность, женщин': cohort_df_2023['Численность, женщин']}),
+               2028: None, 2033: None, 2038: None}
 #____________________________Передвижка_______________________________#
 
 def get_births(year, prev_coh):
@@ -125,18 +126,24 @@ def get_births(year, prev_coh):
 
 
 def move_cohorts(year):
-    global cohort_df_2023, migr_men_step5, migr_women_step5
+    global df_all_forc, cohort_df_2023, migr_men_step5, migr_women_step5
 
-    if year not in df_all_forc.keys():
-        df_prev = df_all_forc[list(df_all_forc.keys())[-1]]
+    if df_all_forc[year] is not None:
+        df_new = df_all_forc[year]
+
+    
+    else:
+        df_prev = df_all_forc[year-5]
         new_male, new_female = [0]* len(cohort_df_2023.index), [0]* len(cohort_df_2023.index)
         
-        for i in range(1, len(cohort_df_2023.index)):
+        for i in range(1, len(cohort_df_2023.index)-1):
             new_male[i] = df_prev.iloc[i-1]['Численность, мужчин'] * cohort_df_2023.iloc[i-1]['Коэффициент дожития, мужчин'] + migr_men_step5.loc[year, cohort_df_2023.index[i]] 
             new_female[i] = df_prev.iloc[i-1]['Численность, женщин'] * cohort_df_2023.iloc[i-1]['Коэффициент дожития, женщин'] + migr_women_step5.loc[year, cohort_df_2023.index[i]]  
 
 
         new_male[0], new_female[0] = get_births(year, df_prev)
+        new_male[-1] = df_prev.iloc[-2]['Численность, мужчин'] * cohort_df_2023.iloc[-2]['Коэффициент дожития, мужчин'] + migr_men_step5.loc[year, cohort_df_2023.index[-2]] + df_prev.iloc[-1]['Численность, мужчин'] * cohort_df_2023.iloc[-1]['Коэффициент дожития, мужчин']
+        new_female[-1] = df_prev.iloc[-2]['Численность, женщин'] * cohort_df_2023.iloc[-2]['Коэффициент дожития, женщин'] + migr_women_step5.loc[year, cohort_df_2023.index[-2]] + df_prev.iloc[-1]['Численность, женщин'] * cohort_df_2023.iloc[-1]['Коэффициент дожития, женщин'] 
         
         df_new = pd.DataFrame({
             'Возрастные группы': cohort_df_2023.index,
@@ -144,9 +151,9 @@ def move_cohorts(year):
             'Численность, женщин': new_female})
         df_new.set_index('Возрастные группы', inplace = True)
         st.write(f"Год: {year}, Сумма мужчин: {sum(new_male)}, Сумма женщин: {sum(new_female)}")
-        
-        
+
         df_all_forc[year] = df_new
+        
 
     df_men = pd.DataFrame({
             'Возрастные группы': cohort_df_2023.index,
@@ -159,7 +166,7 @@ def move_cohorts(year):
     
     df_for_plot = pd.concat([df_men, df_women])
     
-    max_val = 10000
+    max_val = max(max(df_all_forc[year]['Численность, мужчин']), max(df_all_forc[year]['Численность, женщин']))
     chart = (
         alt.Chart(df_for_plot)
         .mark_bar()
@@ -188,31 +195,25 @@ def move_cohorts(year):
             ]
         )
         .properties(
-            width=500,
             height=600,
             title=f'Половозрастная пирамида, {year} год'
         )
     )
-    st.altair_chart(chart)
-
-    st.write(df_all_forc[year])
     
-    return df_all_forc[year]
+    
+    return chart, df_new
 
 
 #____________________________Интерфейс_______________________________#
 
 
-year = st.slider('Передвижка', 2023, 2038, step = 5)
+params_menu = st.tabs(['2023', '2028', '2033', '2038'])
+years = [2023, 2028, 2033, 2038]
 
-if 'year_curr' not in st.session_state:
-    st.session_state.year_curr = year
-
-if st.session_state.year_curr != year:
-    st.session_state.year_curr = year
-
-df_new = move_cohorts(year)
-
-#st.image("content/population_pyramid.gif") 
-
+for tab, year in zip(params_menu, years):
+    with tab:
+        chrt2023, table2023 = move_cohorts(year)
+        st.altair_chart(chrt2023)
+        st.write(table2023)
+    
 
