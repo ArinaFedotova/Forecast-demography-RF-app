@@ -234,7 +234,7 @@ years = [2023, 2028, 2033, 2038]
 for tab, year in zip(params_menu, years):
     with tab:
         chrt2023, table2023 = move_cohorts(year)
-        st.altair_chart(chrt2023)
+        st.altair_chart(chrt2023, use_container_width=True)
         st.write(table2023)
     
 
