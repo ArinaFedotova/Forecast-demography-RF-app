@@ -6,7 +6,7 @@ from forecast_expsm import auto_forecast_exp_smooth
 import altair as alt
 
 st.title('Прогнозирвоание методом передвижки возрастов')
-
+st.set_page_config(layout="wide")
 
 #________________________Получение_данных_____________________________#
 
@@ -75,7 +75,7 @@ def get_forcasts():
     )
     future_women.index.name = 'Годы'
     future_women.index = future_women.index.astype(int)
-    st.write(births_coeff)
+    
     future_brcf = dict()
     for i in range(len(births_coeff.columns)):
         models_birthscf = st.session_state.get(f'auto.{births_coeff.columns[i]}', {})
@@ -112,11 +112,19 @@ def get_forcasts():
     df_womenmig = pd.DataFrame(sums_for5y_mf).T
     
     return df_menmig, df_womenmig, df_birthscoeff
+
+def load_step5():
+    return (
+        pd.read_csv("content/migr_men_step5.csv", index_col=0),
+        pd.read_csv("content/migr_women_step5.csv", index_col=0),
+        pd.read_csv("content/births_coeff_step5.csv", index_col=0),
+    )
         
-migr_men_step5, migr_women_step5, births_coeff_step5 = get_forcasts()
+migr_men_step5, migr_women_step5, births_coeff_step5 = load_step5()
+
+
 men_prop = 0.514569
 wom_prop = 0.485431
-st.write(births_coeff_step5)
 
 df_all_forc = {2023 : pd.DataFrame({
             'Численность, мужчин': cohort_df_2023['Численность, мужчин'],
@@ -205,6 +213,7 @@ def move_cohorts(year):
             ]
         )
         .properties(
+            width='container',
             height=600,
             title=f'Половозрастная пирамида, {year} год'
         )
