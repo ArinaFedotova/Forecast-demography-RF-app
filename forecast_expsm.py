@@ -113,9 +113,9 @@ def display_sidebar(object_name = '', tab_key = '', size_df = 0, params_vis = No
                 else:
                     t_ratio = st.slider(
                         "Доля тестовой выборки",
-                        min_value = min_test_ratio,
-                        max_value = max_test_ratio,
-                        value = min(0.2, max_test_ratio),
+                        min_value = float(min_test_ratio),
+                        max_value = float(max_test_ratio),
+                        value = float(min(0.2, max_test_ratio)),
                         step=0.05,
                         key = f'test_{tab_key}'
                     )
@@ -412,14 +412,14 @@ def make_diff(table_1, table_2, hist_diff_col, forc_diff_name, param1_name, para
 #____Выбор_объекта_прогнозирования_____
 
 selectbox_type = st.sidebar.selectbox(
-    "Прогнозирвоание экспоненциальным сглаживанием: ",
+    "Прогнозирование экспоненциальным сглаживанием: ",
     ("Демографических процессов",
      "Демографических показателей")
 )
 
 
 if selectbox_type == "Демографических процессов":
-    st.header('Прогнозирвоание демографических процессов методом экспоненциального сглаживания')
+    st.header('Прогнозирование демографических процессов методом экспоненциального сглаживания')
 
     selectbox_proc = st.sidebar.selectbox(
         "Демографический процесс: ",

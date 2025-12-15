@@ -75,7 +75,7 @@ def get_forcasts():
     )
     future_women.index.name = 'Годы'
     future_women.index = future_women.index.astype(int)
-    
+    st.write(births_coeff)
     future_brcf = dict()
     for i in range(len(births_coeff.columns)):
         models_birthscf = st.session_state.get(f'auto.{births_coeff.columns[i]}', {})
@@ -83,7 +83,18 @@ def get_forcasts():
             models_birthscf = auto_forecast_exp_smooth(births_coeff, births_coeff.columns[i], False)
             models_key = f'auto.коэффициента рождаемости.{births_coeff.columns[i]}'
             st.session_state[models_key] = models_birthscf
-        future_brcf[births_coeff.columns[i]] = models_birthscf[0][4].forecast(15)
+        
+        max_mean = max([models_birthscf[2][4].forecast(15).mean(),
+                        models_birthscf[1][4].forecast(15).mean(),
+                        models_birthscf[0][4].forecast(15).mean()])
+        
+        ind = 0
+        for j in range(3):
+            if models_birthscf[j][4].forecast(15).mean() == max_mean:
+                ind = j
+                break
+            
+        future_brcf[births_coeff.columns[i]] = models_birthscf[ind][4].forecast(15)
     future_births_coeff = pd.DataFrame(future_brcf)
     future_births_coeff['Годы'] = new_years
     future_births_coeff.set_index('Годы', inplace = True)
@@ -105,7 +116,7 @@ def get_forcasts():
 migr_men_step5, migr_women_step5, births_coeff_step5 = get_forcasts()
 men_prop = 0.514569
 wom_prop = 0.485431
-
+st.write(births_coeff_step5)
 
 df_all_forc = {2023 : pd.DataFrame({
             'Численность, мужчин': cohort_df_2023['Численность, мужчин'],
@@ -150,7 +161,6 @@ def move_cohorts(year):
             'Численность, мужчин': new_male,
             'Численность, женщин': new_female})
         df_new.set_index('Возрастные группы', inplace = True)
-        st.write(f"Год: {year}, Сумма мужчин: {sum(new_male)}, Сумма женщин: {sum(new_female)}")
 
         df_all_forc[year] = df_new
         
@@ -199,6 +209,8 @@ def move_cohorts(year):
             title=f'Половозрастная пирамида, {year} год'
         )
     )
+
+    st.write(f"Год: {year}, Сумма мужчин: {round(sum(df_new['Численность, мужчин']), 2)}, Сумма женщин: {round(sum(df_new['Численность, женщин']), 2)}")
     
     
     return chart, df_new
