@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from forecast_expsm import auto_forecast_exp_smooth
 import altair as alt
-st.set_page_config(layout="wide")
+
 st.title('Прогнозирвоание методом передвижки возрастов')
 
 
