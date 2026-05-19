@@ -156,13 +156,15 @@ def move_cohorts(year):
         new_male, new_female = [0]* len(cohort_df_2023.index), [0]* len(cohort_df_2023.index)
         
         for i in range(1, len(cohort_df_2023.index)-1):
-            new_male[i] = df_prev.iloc[i-1]['Численность, мужчин'] * cohort_df_2023.iloc[i-1]['Коэффициент дожития, мужчин'] + migr_men_step5.loc[year, cohort_df_2023.index[i]] 
-            new_female[i] = df_prev.iloc[i-1]['Численность, женщин'] * cohort_df_2023.iloc[i-1]['Коэффициент дожития, женщин'] + migr_women_step5.loc[year, cohort_df_2023.index[i]]  
+            new_male[i] = df_prev.iloc[i-1]['Численность, мужчин'] * cohort_df_2023.iloc[i-1]['Коэффициент дожития, мужчин']
+            + migr_men_step5.loc[year, cohort_df_2023.index[i]] 
+            new_female[i] = df_prev.iloc[i-1]['Численность, женщин'] * cohort_df_2023.iloc[i-1]['Коэффициент дожития, женщин']
+            + migr_women_step5.loc[year, cohort_df_2023.index[i]]  
 
 
         new_male[0], new_female[0] = get_births(year, df_prev)
-        new_male[-1] = df_prev.iloc[-2]['Численность, мужчин'] * cohort_df_2023.iloc[-2]['Коэффициент дожития, мужчин'] + migr_men_step5.loc[year, cohort_df_2023.index[-2]] + df_prev.iloc[-1]['Численность, мужчин'] * cohort_df_2023.iloc[-1]['Коэффициент дожития, мужчин']
-        new_female[-1] = df_prev.iloc[-2]['Численность, женщин'] * cohort_df_2023.iloc[-2]['Коэффициент дожития, женщин'] + migr_women_step5.loc[year, cohort_df_2023.index[-2]] + df_prev.iloc[-1]['Численность, женщин'] * cohort_df_2023.iloc[-1]['Коэффициент дожития, женщин'] 
+        new_male[-1] = df_prev.iloc[-2]['Численность, мужчин'] * cohort_df_2023.iloc[-2]['Коэффициент дожития, мужчин'] + migr_men_step5.loc[year, cohort_df_2023.index[-2]] + df_prev.iloc[-1]['Численность, мужчин'] * cohort_df_2023.iloc[-1]['Коэффициент дожития, мужчин']*5
+        new_female[-1] = df_prev.iloc[-2]['Численность, женщин'] * cohort_df_2023.iloc[-2]['Коэффициент дожития, женщин']+ migr_women_step5.loc[year, cohort_df_2023.index[-2]] + df_prev.iloc[-1]['Численность, женщин']* cohort_df_2023.iloc[-1]['Коэффициент дожития, женщин']*5
         
         df_new = pd.DataFrame({
             'Возрастные группы': cohort_df_2023.index,
