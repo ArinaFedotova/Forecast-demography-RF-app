@@ -158,7 +158,8 @@ def display_sidebar(object_name = '', tab_key = '', size_df = 0, params_vis = No
 
 
 def define_error_result(rmse, mape):
-    message = f'На основе выбранных параметров была сформирована прогнозная модель с ошибкой:\n **RMSE: {rmse:.2f}**,\n**MAPE: {mape:.2f}%**.'
+    message = f'''На основе выбранных параметров была сформирована прогнозная модель с ошибкой:\n   
+**RMSE**: {rmse:.2f},\n**MAPE**: {mape:.2f}%.'''
     if mape < 10:
         st.success(f'**Высокое** качество прогноза.\n '+message)
     elif mape < 15:
@@ -268,10 +269,20 @@ def auto_forecast_exp_smooth(data, column_name, info_print = True):
         top3 = models[:3]
     
     if info_print and top3:
-        rmses = "; ".join([f"""{m+1}. RMSE = {top3[m][-1]:.2f} (MAPE = {top3[m][-2]:.2f}%)""" for m in range(len(top3))])
-        st.info(f"""Были подобраны модели с наименьшими ошибками:    
-                {rmses}""")
-                    
+        rmses = "  \n".join([
+            f"{m + 1}. RMSE = {top3[m][-1]:.2f}; MAPE = {top3[m][-2]:.2f}%"
+            for m in range(len(top3))
+        ])
+
+        st.info(
+            "Были подобраны модели с наименьшими ошибками:  \n"
+            f"{rmses}  \n\n"
+            "RMSE — среднеквадратичная ошибка, показывающая средний размер отклонения прогноза "
+            "от фактических значений.  \n"
+            "MAPE — средняя абсолютная процентная ошибка, показывающая среднюю ошибку прогноза в процентах."
+        )
+
+                        
     return top3
                                             
     
@@ -299,6 +310,83 @@ def split_data(data, test_ratio = 0.1):
     train = data[:-test_size]
     test = data[-test_size:]
     return train, test 
+
+
+def show_model_params(model):
+    params = model.params
+
+    param_descriptions = {
+        "smoothing_level": (
+            "Коэффициент сглаживания уровня ряда (α)",
+            "Определяет, насколько сильно модель учитывает последние наблюдения."
+            "Чем значение ближе к 1, тем быстрее прогноз реагирует на новые изменения."
+        ),
+        "smoothing_trend": (
+            "Коэффициент сглаживания тренда (β)",
+            "Задает скорость обновления оценки тренда (роста или снижения показателя)."
+        ),
+        "smoothing_seasonal": (
+            "Коэффициент сглаживания сезонности (γ)",
+            "Показывает, насколько сильно учитываются сезонные колебания в данных."
+        ),
+        "damping_trend": (
+            "Коэффициент затухания тренда (φ)",
+            "Позволяет постепенно ослаблять влияние тренда в долгосрочном прогнозе, предотвращая чрезмерный рост или снижение показателя."
+            "Значение ближе к 1 означает более устойчивый тренд."
+        ),
+        "initial_level": (
+            "Начальная оценка уровня временного ряда",
+            "Базовое значение временного ряда, с которого начинается построение модели."
+        ),
+        "initial_trend": (
+            "Начальное значение тренда",
+            "Начальная оценка первоначальной скорости изменения показателя во времени."
+        ),
+    }
+
+    important_params = [
+        "smoothing_level",
+        "smoothing_trend",
+        "smoothing_seasonal",
+        "damping_trend",
+        "initial_level",
+        "initial_trend",
+    ]
+
+    rows = []
+
+    for key in important_params:
+        value = params.get(key)
+
+        if value is not None and pd.notna(value):
+            title, description = param_descriptions[key]
+            rows.append({
+                "Параметр": title,
+                "Значение": round(value, 2) if isinstance(value, float) else value,
+                "Пояснение": description
+            })
+
+    if rows:
+        for row in rows:
+            st.markdown(
+                f"""
+                <div style="
+                    border: 1px solid #E0E0E0;
+                    border-radius: 8px;
+                    padding: 12px 16px;
+                    margin-bottom: 10px;
+                    background-color: #FAFAFA;
+                ">
+                    <b>{row["Параметр"]}</b><br>
+                    <span style="color: #555;">Значение:</span>
+                    <code>{row["Значение"]}</code><br><br>
+                    <span>{row["Пояснение"]}</span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+    else:
+        st.info("Для выбранной модели дополнительные параметры сглаживания не были рассчитаны.")
 
 
 def plot_chart(data, name, pred_column, demo_param, test_ratio, forecast_len, trend = None, season = None, period = None):
@@ -336,8 +424,7 @@ def plot_chart(data, name, pred_column, demo_param, test_ratio, forecast_len, tr
         st.line_chart(merged_df, x_label = 'Годы', y_label = 'Человек')
 
         with st.expander("Параметры модели"):
-            for k, v in model.params.items():
-                st.write(f"**{k}**: {v}")
+            show_model_params(model)
     else:
         models_key = f'auto.{name}.{pred_column}'
         if models_key not in st.session_state:
@@ -364,8 +451,8 @@ def plot_chart(data, name, pred_column, demo_param, test_ratio, forecast_len, tr
         with st.expander("Параметры модели"):
             for j in range(len(best_models)):
                 st.write(f'Модель {j+1}:')
-                for k, v in best_models[j][4].params.items():
-                    st.write(f"**{k}**: {v}")
+                show_model_params(best_models[j][4])
+                
     return merged_df
 
 
